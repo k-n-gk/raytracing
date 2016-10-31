@@ -77,17 +77,17 @@ int main() {
 	//char file_name[256];
 
 	pict.pixels = NULL;
-	pict.width = 680;
-	pict.height = 460;
-	int nx = 680;
-	int ny = 460;
+	pict.width = 300;
+	pict.height = 200;
+	int nx = 300;
+	int ny = 200;
 	create_ppm(&pict, pict.width, pict.height);
 
-	for (int j = nx - 1;j >= 0; j--) {
-		for (int i = 0; i < ny; i++) {
+	for (int j =ny - 1;j >= 0; j--) {
+		for (int i = 0; i < nx; i++) {
 			pict.pixels[i][j].r = float(i) / float(nx);
 			pict.pixels[i][j].g = float(j) / float(ny);
-			pict.pixels[i][j].b = 0.6;
+			pict.pixels[i][j].b = 0.3;
 		}
 	}
 	save_to_file("test.ppm", &pict);
