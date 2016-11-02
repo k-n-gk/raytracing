@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <stdio.h>
+#include "ray.h"
 
 
 typedef struct _RGB {
