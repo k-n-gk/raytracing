@@ -18,6 +18,33 @@ typedef struct _PPM
     int height;
 }PPM;
 
+float hit_sphere(const vec3& center, float radius, const ray& r) {
+	vec3 oc = r.origin() - center;
+	float a = dot(r.direction(), r.direction());
+	float b = 2.0f* dot(oc, r.direction());
+	float c = dot(oc, oc) - radius*radius;
+	float discriminant = b*b - 4.0f * a*c;
+
+	if (discriminant < 0.0f) {
+		return -1.0;
+	}
+	else {
+		return(-b - sqrt(discriminant)) / (2.0f*a);
+	}
+}
+
+vec3 color(const ray& r) {
+	float des = 2.0;
+	float t = hit_sphere(vec3(0, 0, -des), 1, r);
+		if (t > 0.0f) {
+			vec3 N = unit_vector(r.point_at_parameter(t) - vec3(0, 0, -des));
+			//t = (t > 1) ? 1.0 : t;
+			return  0.5f * vec3(N.x()+1, N.y()+1, N.z()+1);
+		}
+	vec3 unit_direction = unit_vector(r.direction());
+	t = 0.5f*(unit_direction.y() + 1.0f);
+	return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t*vec3(0.5f, 0.7f, 1.0f);
+}
 
 void free_ppm(PPM *ppm)
 {
@@ -75,21 +102,34 @@ void save_to_file(char *file_name, PPM *ppm)
 
 int main() {
 	PPM  pict;
-	//char file_name[256];
+	vec3 lower_left_corner(-2.0, -1.0, -1.0);
+	vec3 horizontal(4.0, 0.0, 0.0);
+	vec3 vertical(0.0, 2.0, 0.0);
+	vec3 origin(0.0, 0.0, 0.0);
+
 
 	pict.pixels = NULL;
-	pict.width = 300;
-	pict.height = 200;
-	int nx = 300;
-	int ny = 200;
+	pict.width = 200;
+	pict.height = 100;
+	int nx = 200;
+	int ny = 100;
 	create_ppm(&pict, pict.width, pict.height);
-
+	int y = 0;
 	for (int j =ny - 1;j >= 0; j--) {
 		for (int i = 0; i < nx; i++) {
-			pict.pixels[i][j].r = float(i) / float(nx);
-			pict.pixels[i][j].g = float(j) / float(ny);
-			pict.pixels[i][j].b = 0.3;
+			
+			float u = float(i) / float(nx);
+			float v = float(j) / float(ny);
+			ray r(origin, lower_left_corner + u*horizontal + v*vertical);
+
+			vec3 col = color(r);
+
+			pict.pixels[i][y].r = col[0];
+			pict.pixels[i][y].g = col[1];
+			pict.pixels[i][y].b = col[2];
+
 		}
+		y++;
 	}
 	save_to_file("test.ppm", &pict);
 	free_ppm(&pict);

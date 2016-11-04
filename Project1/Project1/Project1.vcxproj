@@ -160,6 +160,8 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sphere.h" />
+    <ClInclude Include="hitable.h" />
     <ClInclude Include="ray.h" />
     <ClInclude Include="vec3.h" />
   </ItemGroup>
