@@ -1,8 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
-
 #include <iostream>
 #include <stdio.h>
-#include "ray.h"
+#include <float.h>
+//#include "ray.h"
+#include "sphere.h"
+#include "hitable_list.h"
 
 
 typedef struct _RGB {
@@ -18,31 +20,13 @@ typedef struct _PPM
     int height;
 }PPM;
 
-float hit_sphere(const vec3& center, float radius, const ray& r) {
-	vec3 oc = r.origin() - center;
-	float a = dot(r.direction(), r.direction());
-	float b = 2.0f* dot(oc, r.direction());
-	float c = dot(oc, oc) - radius*radius;
-	float discriminant = b*b - 4.0f * a*c;
-
-	if (discriminant < 0.0f) {
-		return -1.0;
-	}
-	else {
-		return(-b - sqrt(discriminant)) / (2.0f*a);
-	}
-}
-
-vec3 color(const ray& r) {
-	float des = 2.0;
-	float t = hit_sphere(vec3(0, 0, -des), 1, r);
-		if (t > 0.0f) {
-			vec3 N = unit_vector(r.point_at_parameter(t) - vec3(0, 0, -des));
-			//t = (t > 1) ? 1.0 : t;
-			return  0.5f * vec3(N.x()+1, N.y()+1, N.z()+1);
+vec3 color(const ray& r,hitable *world) {
+	hit_record rec;
+	if (world->hit(r,0.0,FLT_MAX,rec)) {
+			return  0.5f * vec3(rec.normal.x()+1, rec.normal.y()+1, rec.normal.z()+1);
 		}
 	vec3 unit_direction = unit_vector(r.direction());
-	t = 0.5f*(unit_direction.y() + 1.0f);
+	float t = 0.5*(unit_direction.y() + 1.0);
 	return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t*vec3(0.5f, 0.7f, 1.0f);
 }
 
@@ -106,7 +90,11 @@ int main() {
 	vec3 horizontal(4.0, 0.0, 0.0);
 	vec3 vertical(0.0, 2.0, 0.0);
 	vec3 origin(0.0, 0.0, 0.0);
+	hitable *list[2];
+	list[0] = new sphere(vec3(0, 0, -1.0f), 0.5f);
+	list[1] = new sphere(vec3(0, -100.5, -1.0f),100);
 
+	hitable *world = new hitable_list(list, 2);
 
 	pict.pixels = NULL;
 	pict.width = 200;
@@ -122,7 +110,9 @@ int main() {
 			float v = float(j) / float(ny);
 			ray r(origin, lower_left_corner + u*horizontal + v*vertical);
 
-			vec3 col = color(r);
+
+			vec3 p = r.point_at_parameter(2.0);
+			vec3 col = color(r, world);
 
 			pict.pixels[i][y].r = col[0];
 			pict.pixels[i][y].g = col[1];
