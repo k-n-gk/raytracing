@@ -21,15 +21,15 @@ typedef struct _PPM
     int height;
 }PPM;
 
-double random() {
-	double Rmax = 1.0 / ((double)RAND_MAX + 1);
-	return (double)rand() * Rmax;
+float random() {
+	float Rmax = 1.0f / ((float)RAND_MAX + 1);
+	return (float)rand() * Rmax;
 }
 
 vec3 random_in_unit_sphere() {
 	vec3 p;
 	do {
-		p = 2.0*vec3(random(), random(), random()) - vec3(1, 1, 1);
+		p = 2.0f*vec3(random(), random(), random()) - vec3(1.0f, 1.0f, 1.0f);
 	} while (p.squared_length() >= 1.0);
 	return p;
 }
@@ -38,10 +38,10 @@ vec3 color(const ray& r,hitable *world) {
 	hit_record rec;
 	if (world->hit(r,0.0,FLT_MAX,rec)) {
 		vec3 target = rec.p + rec.normal + random_in_unit_sphere();
-			return  0.5f * vec3(rec.normal.x()+1, rec.normal.y()+1, rec.normal.z()+1);
+		return  0.5f * color(ray(rec.p, target - rec.p), world);
 		}
 	vec3 unit_direction = unit_vector(r.direction());
-	float t = 0.5*(unit_direction.y() + 1.0);
+	float t = 0.5f*(unit_direction.y() + 1.0f);
 	return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t*vec3(0.5f, 0.7f, 1.0f);
 }
 
@@ -109,8 +109,8 @@ int main() {
 	hitable *world = new hitable_list(list, 2);
 	camera cam;
 	pict.pixels = NULL;
-	pict.width = 200;
-	pict.height = 100;
+	pict.width = 400;
+	pict.height = 200;
 	int nx = pict.width;
 	int ny = pict.height;
 	int ns = 100;
@@ -127,6 +127,7 @@ int main() {
 				col += color(r, world);
 			}
 			col /= float(ns);
+			//col = vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
 			pict.pixels[i][y].r = col[0];
 			pict.pixels[i][y].g = col[1];
 			pict.pixels[i][y].b = col[2];
