@@ -37,7 +37,7 @@ vec3 random_in_unit_sphere() {
 	vec3 p;
 	do {
 		p = 2.0f*vec3(random(), random(), random()) - vec3(1.0f, 1.0f, 1.0f);
-	} while (p.squared_length() >= 1.0);
+	} while (p.squared_length() >= 1.0f);
 	return p;
 }
 
@@ -55,16 +55,48 @@ public:
 };
 class metal :public Material {
 public:
-	metal(const vec3& a) :albedo(a) {}
+	metal(const vec3& a, float f) :albedo(a) { if (f < 1.0f)fuzz = f; else fuzz = 1.0f; }
 	virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scatterd)const {
 		vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-		scatterd = ray(rec.p, reflected);
+		scatterd = ray(rec.p, reflected + fuzz*random_in_unit_sphere());
 		attenuation = albedo;
 		return (dot(scatterd.direction(), rec.normal) > 0);
 	}
 	vec3 albedo;
+	float fuzz;
 };
+class dielectic :public Material {
+public:
+	dielectic(float ri) : ref_idx(ri){}
+	virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scatterd)const {
+		vec3 outward_normal;
+		vec3 reflected = reflect(r_in.direction(), rec.normal);
+		float ni_over_nt;
+		attenuation = vec3(1.0f, 1.0f, 1.0f);
+		vec3 refracted;
+		if (dot(r_in.direction(), rec.normal) > 0.0f) {
+			outward_normal = -rec.normal;
+			ni_over_nt = ref_idx;
+		}
+		else
+		{
+			outward_normal = rec.normal;
+			ni_over_nt = 1.0f / ref_idx;
+		}
+		if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted)) {
+			scatterd = ray(rec.p, refracted);
+			
+		}
+		else
+		{
+			scatterd = ray(rec.p, reflected);
+			return false;
+		}
+		return true;
+	}
 
+	float ref_idx;
+};
 
 vec3 color(const ray& r,hitable *world,int depth) {
 	hit_record rec;
@@ -145,10 +177,10 @@ int main() {
 	
 	PPM  pict;
 	hitable *list[4];
-	list[0] = new sphere(vec3(0, 0, -1.0f), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f)));
-	list[1] = new sphere(vec3(0, -100.5f, -1.0f), 100.0f, new lambartian(vec3(0.8f, 0.8f, 0.3f)));
-	list[2] = new sphere(vec3(1.0f, 0, -1.0f), 0.5f, new metal(vec3(0.8f, 0.4f, 0.2f)));
-	list[3] = new sphere(vec3(-1.0f,0,-1.0f), 0.5f, new metal(vec3(0.8f, 0.8f, 0.8f)));
+	list[0] = new sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f),0.1f));
+	list[1] = new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new lambartian(vec3(0.8f, 0.8f, 0.3f)));
+	list[2] = new sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f),0.3f));
+	list[3] = new sphere(vec3(-1.0f,0.0f,-1.0f), 0.5f, new dielectic(1.5f));
 	hitable *world = new hitable_list(list, 4);
 	camera cam;
 	pict.pixels = NULL;
@@ -156,6 +188,8 @@ int main() {
 	pict.height = 400;
 	int nx = pict.width;
 	int ny = pict.height;
+	float invx = 1.0f / float(nx);
+	float invy = 1.0f / float(ny);
 	int ns = 100;
 	create_ppm(&pict, pict.width, pict.height);
 	int y = 0;
@@ -163,8 +197,8 @@ int main() {
 		for (int i = 0; i < nx; i++) {
 			vec3 col(0, 0, 0);
 			for (int s = 0; s < ns; s++) {
-				float u = float(i + random()) / float(nx);
-				float v = float(j + random()) / float(ny);
+				float u = float(i + random()) * invx;
+				float v = float(j + random()) * invy;
 				ray r = cam.get_ray(u, v);
 				//vec3 p = r.point_at_parameter(2.0);
 				col += color(r, world,0);
