@@ -27,6 +27,12 @@ float random() {
 	return (float)rand() * Rmax;
 }
 
+float schlick(float cos, float ref_idx) {
+	float r0 = (1.0f - ref_idx) / (1.0f + ref_idx);
+	r0 = r0*r0;
+	return r0 + (1.0f - r0)*pow((1.0f - cos), 5);
+}
+
 class Material
 {
 public:
@@ -74,23 +80,34 @@ public:
 		float ni_over_nt;
 		attenuation = vec3(1.0f, 1.0f, 1.0f);
 		vec3 refracted;
+		float refract_prob;
+		float cos;
 		if (dot(r_in.direction(), rec.normal) > 0.0f) {
 			outward_normal = -rec.normal;
 			ni_over_nt = ref_idx;
+			cos = ref_idx * dot(r_in.direction(), rec.normal) / r_in.direction().length();
 		}
 		else
 		{
 			outward_normal = rec.normal;
 			ni_over_nt = 1.0f / ref_idx;
+			cos =  -dot(r_in.direction(), rec.normal) / r_in.direction().length();
 		}
 		if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted)) {
-			scatterd = ray(rec.p, refracted);
+			refract_prob = schlick(cos, ref_idx);
 			
 		}
 		else
 		{
 			scatterd = ray(rec.p, reflected);
-			return false;
+			refract_prob = 1.0f;
+		}
+		if (random() < refract_prob) {
+			scatterd = ray(rec.p, reflected);
+		}
+		else
+		{
+			scatterd = ray(rec.p, refracted);
 		}
 		return true;
 	}
@@ -176,21 +193,24 @@ void save_to_file(char *file_name, PPM *ppm)
 int main() {
 	
 	PPM  pict;
-	hitable *list[4];
-	list[0] = new sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f),0.1f));
-	list[1] = new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new lambartian(vec3(0.8f, 0.8f, 0.3f)));
-	list[2] = new sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f),0.3f));
-	list[3] = new sphere(vec3(-1.0f,0.0f,-1.0f), 0.5f, new dielectic(1.5f));
-	hitable *world = new hitable_list(list, 4);
-	camera cam;
+	
 	pict.pixels = NULL;
-	pict.width = 800;
-	pict.height = 400;
+	pict.width = 200;
+	pict.height = 100;
 	int nx = pict.width;
 	int ny = pict.height;
 	float invx = 1.0f / float(nx);
 	float invy = 1.0f / float(ny);
 	int ns = 100;
+	camera cam(vec3(0, 0, 0), vec3(0, 0, -1), vec3(0, 1, 0), 90, (float)nx * invy);
+	float R = cos((float)M_PI / 4.0f);
+	hitable *list[5];
+	list[0] = new sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new dielectic(1.5f));
+	list[1] = new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new lambartian(vec3(0.8f, 0.8f, 0.3f)));
+	list[2] = new sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.3f));
+	list[3] = new sphere(vec3(-100, 0.0f, -R), R, new lambartian(vec3(1.0f, 1.0f, 1.0f)));
+	list[4] = new sphere(vec3(-100.0f, 0.0f, -1.0f), -0.45f, new dielectic(1.5f));
+	hitable *world = new hitable_list(list, 5);
 	create_ppm(&pict, pict.width, pict.height);
 	int y = 0;
 	for (int j = ny - 1; j >= 0; j--) {

@@ -9,7 +9,7 @@ public:
 	sphere() {}
 	sphere(vec3 cen, float r, Material *mat) :center(cen), radius(r) , mat(mat){}
 	virtual bool hit(const ray& r, float tmin,float tmax, hit_record& rec)const;
-	
+private:
 	vec3 center;
 	float radius;
 	Material *mat;
