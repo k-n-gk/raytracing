@@ -22,10 +22,7 @@ typedef struct _PPM
 }PPM;
 
 
-float random() {
-	float Rmax = 1.0f / ((float)RAND_MAX + 1);
-	return (float)rand() * Rmax;
-}
+
 
 float schlick(float cos, float ref_idx) {
 	float r0 = (1.0f - ref_idx) / (1.0f + ref_idx);
@@ -202,14 +199,18 @@ int main() {
 	float invx = 1.0f / float(nx);
 	float invy = 1.0f / float(ny);
 	int ns = 100;
-	camera cam(vec3(0, 0, 0), vec3(0, 0, -1), vec3(0, 1, 0), 90, (float)nx * invy);
+	vec3 lookfrom(3, 3, 2);
+	vec3 lookat(0, 0, -1);
+	float dist_to_focus = (lookfrom - lookat).length();
+	float aperture = 2.0f;
+	camera cam(lookfrom, lookat, vec3(0, 1, 0), 20, (float)nx * invy, aperture, dist_to_focus);
 	float R = cos((float)M_PI / 4.0f);
 	hitable *list[5];
 	list[0] = new sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new dielectic(1.5f));
 	list[1] = new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new lambartian(vec3(0.8f, 0.8f, 0.3f)));
-	list[2] = new sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.3f));
-	list[3] = new sphere(vec3(-100, 0.0f, -R), R, new lambartian(vec3(1.0f, 1.0f, 1.0f)));
-	list[4] = new sphere(vec3(-100.0f, 0.0f, -1.0f), -0.45f, new dielectic(1.5f));
+	list[2] = new sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new lambartian(vec3(0.2f, 0.6f, 0.2f)));
+	list[3] = new sphere(vec3(1.0, 0.0f, -1.0f), 0.5f, new metal(vec3(0.4f, 1.0f, 1.0f),0.2f));
+	list[4] = new sphere(vec3(-1.0f, 0.0f, -1.0f), -0.45f, new dielectic(1.5f));
 	hitable *world = new hitable_list(list, 5);
 	create_ppm(&pict, pict.width, pict.height);
 	int y = 0;
