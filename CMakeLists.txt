@@ -12,15 +12,8 @@
 
 cmake_minimum_required(VERSION 3.1)
 
-message("***   Build the test harness for C++ STL variants of Diff Match and Patch ***")
-message("***   http://code.google.com/p/google-diff-match-patch/ and               ***")
-message("***   https://github.com/leutloff/diff-match-patch-cpp-stl                ***")
+project (Source CXX)
 
-project (diff-match-patch-cpp-stl CXX)
+add_executable(a.out Project1/Project1/Source.cpp)
 
-add_executable(diff_match_patch_test_wstring diff_match_patch_test_wstring.cpp)
-
-add_executable(diff_match_patch_test_string diff_match_patch_test_string.cpp)
-
-set_property(TARGET diff_match_patch_test_wstring PROPERTY CXX_STANDARD 11)
-set_property(TARGET diff_match_patch_test_string PROPERTY CXX_STANDARD 11)
+set_property(TARGET a.out PROPERTY CXX_STANDARD 11)

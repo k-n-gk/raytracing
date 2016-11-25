@@ -10,4 +10,4 @@ before_script:
   - cd build
   - cmake --version
   - cmake -DCMAKE_VERBOSE_MAKEFILE=ON ..
-script: make && ./diff_match_patch_test_string && ./diff_match_patch_test_wstring
+script: make && ./a.out
