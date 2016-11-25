@@ -10,4 +10,4 @@ before_script:
   - cd build
   - cmake --version
   - cmake -DCMAKE_VERBOSE_MAKEFILE=ON ..
-script: make && ./a.out
+script: make && ./a.out && ls -lsa
