@@ -161,6 +161,37 @@ void create_ppm(PPM *ppm, int width, int height)
 	for (i = 1; i<ppm->width; i++) ppm->pixels[i] = ppm->pixels[i - 1] + ppm->height;
 }
 
+hitable *random_scene() {
+	int n = 500;
+	hitable **list = new hitable*[n + 1];
+	list[0] = new sphere(vec3(0, -1000, 0), 1000, new lambartian(vec3(0.5f, 0.5f, 0.5f)));
+	int i = 1;
+	for (int a = -11; a < 11; a++) {
+		for (int b = -11; b < 11; b++) {
+			float choose_mat = random();
+			vec3 center(a + 0.9f*random(), 0.2f, b + 0.9f*random());
+			if ((center - vec3(4, 0.2f, 0)).length() > 0.9f) {
+				if (choose_mat < 0.8f) {  // diffuse
+					list[i++] = new sphere(center, 0.2f, new lambartian(vec3(random()*random(), random()*random(), random()*random())));
+				}
+				else if (choose_mat < 0.95f) { // metal
+					list[i++] = new sphere(center, 0.2f,
+						new metal(vec3(0.5f*(1 + random()), 0.5f*(1 + random()), 0.5f*(1 + random())), 0.5f*random()));
+				}
+				else {  // glass
+					list[i++] = new sphere(center, 0.2f, new dielectic(1.5f));
+				}
+			}
+		}
+	}
+
+	list[i++] = new sphere(vec3(0, 1, 0), 1.0f, new dielectic(1.5f));
+	list[i++] = new sphere(vec3(-4, 1, 0), 1.0f, new lambartian(vec3(0.4f, 0.2f, 0.1f)));
+	list[i++] = new sphere(vec3(4, 1, 0), 1.0f, new metal(vec3(0.7f, 0.6f, 0.5f), 0.0f));
+
+	return new hitable_list(list, i);
+}
+
 void save_to_file(char *file_name, PPM *ppm)
 {
 	int  x, y;
@@ -192,26 +223,28 @@ int main() {
 	PPM  pict;
 	
 	pict.pixels = NULL;
-	pict.width = 200;
-	pict.height = 100;
+	pict.width = 400;
+	pict.height = 200;
 	int nx = pict.width;
 	int ny = pict.height;
 	float invx = 1.0f / float(nx);
 	float invy = 1.0f / float(ny);
 	int ns = 100;
-	vec3 lookfrom(3, 3, 2);
-	vec3 lookat(0, 0, -1);
-	float dist_to_focus = (lookfrom - lookat).length();
-	float aperture = 2.0f;
+	vec3 lookfrom(13, 2, 3);
+	vec3 lookat(0, 0, 0);
+	float dist_to_focus = 10.0f;
+	float aperture = 0.1f;
 	camera cam(lookfrom, lookat, vec3(0, 1, 0), 20, (float)nx * invy, aperture, dist_to_focus);
 	float R = cos((float)M_PI / 4.0f);
-	hitable *list[5];
-	list[0] = new sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new dielectic(1.5f));
+	hitable *list[4];
+	list[0] = new sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new lambartian(vec3(0.8f, 0.8f, 0.0f)));
 	list[1] = new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new lambartian(vec3(0.8f, 0.8f, 0.3f)));
-	list[2] = new sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new lambartian(vec3(0.2f, 0.6f, 0.2f)));
-	list[3] = new sphere(vec3(1.0, 0.0f, -1.0f), 0.5f, new metal(vec3(0.4f, 1.0f, 1.0f),0.2f));
-	list[4] = new sphere(vec3(-1.0f, 0.0f, -1.0f), -0.45f, new dielectic(1.5f));
-	hitable *world = new hitable_list(list, 5);
+	list[2] = new sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(1.0f, 1.0f, 1.0f),0.0f));
+	list[3] = new sphere(vec3(1.0, 0.0f, -1.0f), 0.5f, new lambartian(vec3(0.8f, 0.8f, 0.0f)));
+	hitable *world = new hitable_list(list, 4);
+
+	world = random_scene();
+
 	create_ppm(&pict, pict.width, pict.height);
 	int y = 0;
 	for (int j = ny - 1; j >= 0; j--) {
