@@ -235,8 +235,8 @@ int main() {
 	PPM  pict;
 	
 	pict.pixels = NULL;
-	pict.width = 800;
-	pict.height = 400;
+	pict.width =200;
+	pict.height = 100;
 	int nx = pict.width;
 	int ny = pict.height;
 	float invx = 1.0f / float(nx);
@@ -255,7 +255,7 @@ int main() {
 	list[3] = new sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.5f, 0.0f),0.2f));
 	hitable *world = new hitable_list(list, 4);
 
-	world = random_scene();
+	//world = random_scene();
 
 	create_ppm(&pict, pict.width, pict.height);
 	int y = 0;
