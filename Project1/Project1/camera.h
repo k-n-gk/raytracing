@@ -4,15 +4,15 @@
 #define _USE_MATH_DEFINES
 #include "ray.h"
 
-float random() {
-	float Rmax = 1.0f / ((float)RAND_MAX + 1);
-	return (float)rand() * Rmax;
-}
 
 vec3 random_in_unit_disk() {
 	vec3 p;
+	float Rmax = 1.0f / ((float)RAND_MAX + 1);
+
 	do {
-		p = 2.0f * vec3(random(), random(), 0) - vec3(1, 1, 0);
+		float random1 = (float)rand() * Rmax;
+		float random2 = (float)rand() * Rmax;
+		p = 2.0f * vec3(random1, random2, 0) - vec3(1, 1, 0);
 	} while (dot(p, p) >= 1.0f);
 	return p;
 }
@@ -36,9 +36,9 @@ public:
 	}
 
 	ray get_ray(float s, float t) { 
-		vec3 rd = lens_radius * random_in_unit_disk();
+		vec3 rd = lens_radius *random_in_unit_disk();
 		vec3 offset = u * rd.x() + v * rd.y();
-		return ray(origin /*+ offset*/, lower_left_corner + s * horizontal + t * vertical - origin/* - offset*/); }
+		return ray(origin + offset, lower_left_corner + s * horizontal + t * vertical - origin - offset); }
 private:
 	vec3 lower_left_corner;
 	vec3 horizontal;

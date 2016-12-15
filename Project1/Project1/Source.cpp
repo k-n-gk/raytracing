@@ -22,7 +22,10 @@ typedef struct _PPM
     int height;
 }PPM;
 
-
+float random() {
+	float Rmax = 1.0f / ((float)RAND_MAX + 1);
+	return (float)rand() * Rmax;
+}
 
 
 float schlick(float cos, float ref_idx) {
@@ -55,19 +58,21 @@ public:
 		attenuation = albedo;
 		return true;
 	}
+private:
 	vec3 albedo;
 };
-class Tlambartian :public Material {
-public:
-	Tlambartian(const vec3& a) :albedo(a) {}
-	virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scatterd)const {
-		vec3 target = rec.p + rec.normal;
-		scatterd = ray(rec.p, target - rec.p);
-		attenuation = albedo;
-		return true;
-	}
-	vec3 albedo;
-};
+//class Tlambartian :public Material {
+//public:
+//	Tlambartian(const vec3& a) :albedo(a) {}
+//	virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scatterd)const {
+//		vec3 target = rec.p + rec.normal;
+//		scatterd = ray(rec.p, target - rec.p);
+//		attenuation = albedo;
+//		return true;
+//	}
+//private:
+//	vec3 albedo;
+//};
 class metal :public Material {
 public:
 	metal(const vec3& a, float f) :albedo(a) { if (f < 1.0f)fuzz = f; else fuzz = 1.0f; }
@@ -77,6 +82,7 @@ public:
 		attenuation = albedo;
 		return (dot(scatterd.direction(), rec.normal) > 0);
 	}
+private:
 	vec3 albedo;
 	float fuzz;
 };
@@ -120,7 +126,7 @@ public:
 		}
 		return true;
 	}
-
+private:
 	float ref_idx;
 };
 
@@ -266,7 +272,7 @@ int main() {
 				float u = float(i + random()) * invx;
 				float v = float(j + random()) * invy;
 				ray r = cam.get_ray(u, v);
-				vec3 p = r.point_at_parameter(2.0);
+				//vec3 p = r.point_at_parameter(2.0f);
 				col += color(r, world,0);
 			}
 			col /= float(ns);
