@@ -5,7 +5,7 @@
 #include "ray.h"
 
 
-float random() {
+float randomfloat() {
 	float Rmax = 1.0f / ((float)RAND_MAX + 1);
 	return (float)rand() * Rmax;
 }
@@ -16,7 +16,7 @@ vec3 random_in_unit_disk() {
 
 	do {
 
-		p = 2.0f * vec3(random(), random(), 0) - vec3(1, 1, 0);
+		p = 2.0f * vec3(randomfloat(), randomfloat(), 0) - vec3(1, 1, 0);
 	} while (dot(p, p) >= 1.0f);
 	return p;
 }
