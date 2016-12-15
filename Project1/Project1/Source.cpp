@@ -22,10 +22,7 @@ typedef struct _PPM
     int height;
 }PPM;
 
-float randomfloat() {
-	float Rmax = 1.0f / ((float)RAND_MAX + 1);
-	return (float)rand() * Rmax;
-}
+
 
 
 float schlick(float cos, float ref_idx) {

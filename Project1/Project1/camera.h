@@ -5,14 +5,18 @@
 #include "ray.h"
 
 
+float randomfloat() {
+	float Rmax = 1.0f / ((float)RAND_MAX + 1);
+	return (float)rand() * Rmax;
+}
+
 vec3 random_in_unit_disk() {
 	vec3 p;
 	float Rmax = 1.0f / ((float)RAND_MAX + 1);
 
 	do {
-		float random1 = (float)rand() * Rmax;
-		float random2 = (float)rand() * Rmax;
-		p = 2.0f * vec3(random1, random2, 0) - vec3(1, 1, 0);
+
+		p = 2.0f * vec3(randomfloat(), randomfloat(), 0) - vec3(1, 1, 0);
 	} while (dot(p, p) >= 1.0f);
 	return p;
 }
