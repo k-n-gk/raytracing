@@ -5,6 +5,7 @@
 #include <float.h>
 #include "camera.h"
 #include "sphere.h"
+#include "triangle.h"
 #include "hitable_list.h"
 
 
@@ -39,7 +40,7 @@ public:
 vec3 random_in_unit_sphere() {
 	vec3 p;
 	do {
-		p = 2.0f*vec3(random(), random(), random()) - vec3(1.0f, 1.0f, 1.0f);
+		p = 2.0f*vec3(randomfloat(), randomfloat(), randomfloat()) - vec3(1.0f, 1.0f, 1.0f);
 	} while (p.squared_length() >= 1.0f);
 	return p;
 }
@@ -54,8 +55,10 @@ public:
 		attenuation = albedo;
 		return true;
 	}
+private:
 	vec3 albedo;
 };
+
 class metal :public Material {
 public:
 	metal(const vec3& a, float f) :albedo(a) { if (f < 1.0f)fuzz = f; else fuzz = 1.0f; }
@@ -65,6 +68,7 @@ public:
 		attenuation = albedo;
 		return (dot(scatterd.direction(), rec.normal) > 0);
 	}
+private:
 	vec3 albedo;
 	float fuzz;
 };
@@ -99,7 +103,7 @@ public:
 			scatterd = ray(rec.p, reflected);
 			refract_prob = 1.0f;
 		}
-		if (random() < refract_prob) {
+		if (randomfloat() < refract_prob) {
 			scatterd = ray(rec.p, reflected);
 		}
 		else
@@ -108,7 +112,7 @@ public:
 		}
 		return true;
 	}
-
+private:
 	float ref_idx;
 };
 
@@ -168,15 +172,15 @@ hitable *random_scene() {
 	int i = 1;
 	for (int a = -11; a < 11; a++) {
 		for (int b = -11; b < 11; b++) {
-			float choose_mat = random();
-			vec3 center(a + 0.9f*random(), 0.2f, b + 0.9f*random());
+			float choose_mat = randomfloat();
+			vec3 center(a + 0.9f*randomfloat(), 0.2f, b + 0.9f*randomfloat());
 			if ((center - vec3(4, 0.2f, 0)).length() > 0.9f) {
 				if (choose_mat < 0.8f) {  // diffuse
-					list[i++] = new sphere(center, 0.2f, new lambartian(vec3(random()*random(), random()*random(), random()*random())));
+					list[i++] = new sphere(center, 0.2f, new lambartian(vec3(randomfloat()*randomfloat(), randomfloat()*randomfloat(), randomfloat()*randomfloat())));
 				}
 				else if (choose_mat < 0.95f) { // metal
 					list[i++] = new sphere(center, 0.2f,
-						new metal(vec3(0.5f*(1 + random()), 0.5f*(1 + random()), 0.5f*(1 + random())), 0.5f*random()));
+						new metal(vec3(0.5f*(1 + randomfloat()), 0.5f*(1 + randomfloat()), 0.5f*(1 + randomfloat())), 0.5f*randomfloat()));
 				}
 				else {  // glass
 					list[i++] = new sphere(center, 0.2f, new dielectic(1.5f));
@@ -223,27 +227,27 @@ int main() {
 	PPM  pict;
 	
 	pict.pixels = NULL;
-	pict.width = 400;
-	pict.height = 200;
+	pict.width =200;
+	pict.height = 100;
 	int nx = pict.width;
 	int ny = pict.height;
 	float invx = 1.0f / float(nx);
 	float invy = 1.0f / float(ny);
 	int ns = 100;
-	vec3 lookfrom(13, 2, 3);
-	vec3 lookat(0, 0, 0);
+	vec3 lookfrom(0, 2, 8);
+	vec3 lookat(0, 1, 0);
 	float dist_to_focus = 10.0f;
 	float aperture = 0.1f;
 	camera cam(lookfrom, lookat, vec3(0, 1, 0), 20, (float)nx * invy, aperture, dist_to_focus);
 	float R = cos((float)M_PI / 4.0f);
 	hitable *list[4];
-	list[0] = new sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new lambartian(vec3(0.8f, 0.8f, 0.0f)));
-	list[1] = new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new lambartian(vec3(0.8f, 0.8f, 0.3f)));
-	list[2] = new sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(1.0f, 1.0f, 1.0f),0.0f));
-	list[3] = new sphere(vec3(1.0, 0.0f, -1.0f), 0.5f, new lambartian(vec3(0.8f, 0.8f, 0.0f)));
+	list[0] = new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new metal(vec3(0.3f, 0.8f, 0.3f) ,0.5));
+	list[1] = new triangle(vec3(-1.0f, 1.0f, -3.0f), vec3(0.0f, 2.0f, 0.0f), vec3(1.0f, 1.0f, -3.0f), new metal(vec3(0.8f, 0.5f, 0.0f),0.0f));
+	list[2] = new sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.5f, 0.0f),0.2f));
+	list[3] = new sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.5f, 0.0f),0.2f));
 	hitable *world = new hitable_list(list, 4);
 
-	world = random_scene();
+	//world = random_scene();
 
 	create_ppm(&pict, pict.width, pict.height);
 	int y = 0;
@@ -251,10 +255,10 @@ int main() {
 		for (int i = 0; i < nx; i++) {
 			vec3 col(0, 0, 0);
 			for (int s = 0; s < ns; s++) {
-				float u = float(i + random()) * invx;
-				float v = float(j + random()) * invy;
+				float u = float(i + randomfloat()) * invx;
+				float v = float(j + randomfloat()) * invy;
 				ray r = cam.get_ray(u, v);
-				//vec3 p = r.point_at_parameter(2.0);
+				//vec3 p = r.point_at_parameter(2.0f);
 				col += color(r, world,0);
 			}
 			col /= float(ns);
