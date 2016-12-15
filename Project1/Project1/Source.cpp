@@ -1,7 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <stdio.h>
-#include <stdlib.h>
 #include <float.h>
 #include "camera.h"
 #include "sphere.h"
@@ -40,7 +39,7 @@ public:
 vec3 random_in_unit_sphere() {
 	vec3 p;
 	do {
-		p = 2.0f*vec3(randomfloat(), randomfloat(), randomfloat()) - vec3(1.0f, 1.0f, 1.0f);
+		p = 2.0f*vec3(random(), random(), random()) - vec3(1.0f, 1.0f, 1.0f);
 	} while (p.squared_length() >= 1.0f);
 	return p;
 }
@@ -103,7 +102,7 @@ public:
 			scatterd = ray(rec.p, reflected);
 			refract_prob = 1.0f;
 		}
-		if (randomfloat() < refract_prob) {
+		if (random() < refract_prob) {
 			scatterd = ray(rec.p, reflected);
 		}
 		else
@@ -172,15 +171,15 @@ hitable *random_scene() {
 	int i = 1;
 	for (int a = -11; a < 11; a++) {
 		for (int b = -11; b < 11; b++) {
-			float choose_mat = randomfloat();
-			vec3 center(a + 0.9f*randomfloat(), 0.2f, b + 0.9f*randomfloat());
+			float choose_mat = random();
+			vec3 center(a + 0.9f*random(), 0.2f, b + 0.9f*random());
 			if ((center - vec3(4, 0.2f, 0)).length() > 0.9f) {
 				if (choose_mat < 0.8f) {  // diffuse
-					list[i++] = new sphere(center, 0.2f, new lambartian(vec3(randomfloat()*randomfloat(), randomfloat()*randomfloat(), randomfloat()*randomfloat())));
+					list[i++] = new sphere(center, 0.2f, new lambartian(vec3(random()*random(), random()*random(), random()*random())));
 				}
 				else if (choose_mat < 0.95f) { // metal
 					list[i++] = new sphere(center, 0.2f,
-						new metal(vec3(0.5f*(1 + randomfloat()), 0.5f*(1 + randomfloat()), 0.5f*(1 + randomfloat())), 0.5f*randomfloat()));
+						new metal(vec3(0.5f*(1 + random()), 0.5f*(1 + random()), 0.5f*(1 + random())), 0.5f*random()));
 				}
 				else {  // glass
 					list[i++] = new sphere(center, 0.2f, new dielectic(1.5f));
@@ -255,8 +254,8 @@ int main() {
 		for (int i = 0; i < nx; i++) {
 			vec3 col(0, 0, 0);
 			for (int s = 0; s < ns; s++) {
-				float u = float(i + randomfloat()) * invx;
-				float v = float(j + randomfloat()) * invy;
+				float u = float(i + random()) * invx;
+				float v = float(j + random()) * invy;
 				ray r = cam.get_ray(u, v);
 				//vec3 p = r.point_at_parameter(2.0f);
 				col += color(r, world,0);
