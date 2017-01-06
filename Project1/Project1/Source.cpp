@@ -227,8 +227,8 @@ int main() {
 	PPM  pict;
 	
 	pict.pixels = NULL;
-	pict.width =200;
-	pict.height = 100;
+	pict.width =300;
+	pict.height = 150;
 	int nx = pict.width;
 	int ny = pict.height;
 	float invx = 1.0f / float(nx);
@@ -243,7 +243,7 @@ int main() {
 	hitable *list[4];
 	list[0] = new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, new metal(vec3(0.3f, 0.8f, 0.3f) ,0.5));
 	list[1] = new triangle(vec3(-1.0f, 1.0f, -3.0f), vec3(0.0f, 2.0f, 0.0f), vec3(1.0f, 1.0f, -3.0f), new lambartian(vec3(0.8f, 0.5f, 0.0f)));
-	list[2] = new sphere(vec3(-1.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.5f, 0.0f),0.2f));
+	list[2] = new moving_sphere(vec3(-1.0f, 0.0f, -1.0f), vec3(-1.0f, 0.5f, -1.0f),0.0f,0.5f, 0.5f, new metal(vec3(0.8f, 0.5f, 0.0f),0.2f));
 	list[3] = new sphere(vec3(1.0f, 0.0f, -1.0f), 0.5f, new metal(vec3(0.8f, 0.5f, 0.0f),0.2f));
 	hitable *world = new hitable_list(list, 4);
 
@@ -269,6 +269,7 @@ int main() {
 
 		}
 		y++;
+		printf(".\n");
 	}
 	save_to_file("test.ppm", &pict);
 	free_ppm(&pict);
