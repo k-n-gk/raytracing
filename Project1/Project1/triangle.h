@@ -44,6 +44,7 @@ bool triangle::hit(const ray& r, float t_min, float t_max, hit_record& rec)const
 	if (c<0) {
 		return false;
 	}
+	rec.t = t;
 	rec.p = r.point_at_parameter(rec.t);
 	rec.normal = normal;
 	rec.mat_ptr = mat;

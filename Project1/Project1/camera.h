@@ -23,7 +23,9 @@ vec3 random_in_unit_disk() {
 
 class camera {
 public:
-	camera(vec3 lookfrom,vec3 lookat,vec3 vup, float vfov ,float aspect,float aperture,float focus_dist) {
+	camera(vec3 lookfrom, vec3 lookat, vec3 vup, float vfov, float aspect, float aperture, float focus_dist, float t_st,float t_en) {
+		timestart = t_st;
+		timeend = t_en;
 		lens_radius = aperture / 2.0f;
 		float theta = vfov*(float)M_PI / 180;
 		float half_height = tan(theta / 2);
@@ -32,7 +34,6 @@ public:
 		w = unit_vector(lookfrom - lookat);
 		u = unit_vector(cross(vup, w));
 		v = cross(w, u);
-		//lower_left_corner = vec3(-half_width, -half_height, -1.0f);
 		lower_left_corner = origin - half_width*u*focus_dist - half_height*v*focus_dist - w*focus_dist;
 		horizontal = 2.0f * half_width * u*focus_dist;
 		vertical = 2.0f * half_height * v*focus_dist;
@@ -42,7 +43,8 @@ public:
 	ray get_ray(float s, float t) { 
 		vec3 rd = lens_radius *random_in_unit_disk();
 		vec3 offset = u * rd.x() + v * rd.y();
-		return ray(origin + offset, lower_left_corner + s * horizontal + t * vertical - origin - offset); }
+		float time = timestart + randomfloat() * (timeend - timestart);
+		return ray(origin + offset, lower_left_corner + s * horizontal + t * vertical - origin - offset,time); }
 private:
 	vec3 lower_left_corner;
 	vec3 horizontal;
@@ -50,5 +52,6 @@ private:
 	vec3 origin;
 	vec3 u, v, w;
 	float lens_radius;
+	float timestart,timeend;
 };
 #endif
