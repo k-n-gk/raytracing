@@ -227,8 +227,8 @@ int main() {
 	PPM  pict;
 	
 	pict.pixels = NULL;
-	pict.width =200;
-	pict.height = 100;
+	pict.width =800;
+	pict.height = 400;
 	int nx = pict.width;
 	int ny = pict.height;
 	float invx = 1.0f / float(nx);
